@@ -2,6 +2,7 @@
 
 class File
 {
+    private const FILE_SEPARATOR = '   ';
     public function __construct(private string $path)
     {
         if (!self::exists($path)) {
@@ -17,7 +18,7 @@ class File
         $secondList = [];
 
         foreach ($lines as $line) {
-            $result = explode('   ', $line);
+            $result = explode(self::FILE_SEPARATOR, $line);
             if (count($result) < 2) {
                 error_log("Invalid line format: $line");
                 continue;
