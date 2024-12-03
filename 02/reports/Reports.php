@@ -7,6 +7,7 @@ class Reports
     public array $reports;
     public const MIN_STEP = 1;
     public const MAX_STEP = 3;
+    public const TOLERANCE = 1;
 
     public function __construct(array $reports)
     {
