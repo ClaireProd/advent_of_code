@@ -2,26 +2,16 @@
 
 class LetterCollection
 {
-    public array $columns;
-    public array $diagonals;
-
+    public array $columns = [];
 
     private function __construct(public array $rows = [])
     {
         $this->setColumns($this->rows);
-        $this->setDiagonals($this->rows);
     }
 
-    public static function fromString(string $data): LetterCollection
+    public static function fromString(string $content): LetterCollection
     {
-        $lines = explode("\n", $data);
-
-        return new self($lines);
-    }
-
-    public static function fromArray(array $lines): LetterCollection
-    {
-        return new self($lines);
+        return new self(explode("\n", $content));
     }
 
     private function setColumns(array $rows): void
@@ -36,56 +26,44 @@ class LetterCollection
             }
         }
 
-        $this->columns = array_map(static function ($column) {
-            return implode("", $column);
-        }, $columns);
+        $this->columns = $columns;
     }
 
-    private function setDiagonals(array $rows): void
+    public function findX(): int
     {
-        $leftToRightDiagonals = [];
-        $rightToLeftDiagonals = [];
+        $occurrences = 0;
 
-        foreach ($rows as $rowIndex => $row) {
-            $columns = str_split($row, 1);
-            foreach ($columns as $colIndex => $column) {
-                $leftToRightDiagonals[$rowIndex + $colIndex][] = $column;
-                $rightToLeftDiagonals[$rowIndex - $colIndex][] = $column;
+        foreach ($this->rows as $rowIndex => $row) {
+            $chars = str_split($row, 1);
+
+            foreach ($chars as $colIndex => $char) {
+                if ($char === "A") {
+                    $neighbors = $this->getNeighbors($rowIndex, $colIndex);
+
+                    if ($this->isValidPattern($neighbors)) {
+                        $occurrences++;
+                    }
+                }
             }
         }
 
-        $this->diagonals = array_merge(
-            array_map(fn($d) => implode('', $d), $leftToRightDiagonals),
-            array_map(fn($d) => implode('', $d), $rightToLeftDiagonals),
-        );
+        return $occurrences;
     }
 
-    public function countWord(string $word): int
+    private function getNeighbors(int $rowIndex, int $colIndex): array
     {
-        $reverted = strrev($word);
+        return [
+            'topLeft' => $this->columns[$colIndex - 1][$rowIndex - 1] ?? "",
+            'topRight' => $this->columns[$colIndex + 1][$rowIndex - 1] ?? "",
+            'bottomLeft' => $this->columns[$colIndex - 1][$rowIndex + 1] ?? "",
+            'bottomRight' => $this->columns[$colIndex + 1][$rowIndex + 1] ?? ""
+        ];
+    }
 
-        $rowsOccurrences = array_reduce($this->rows, function ($carry, $row) use ($word, $reverted) {
-            $carry += preg_match_all("/$word/", $row);
-            return $carry + preg_match_all("/$reverted/", $row);
-        }, 0);
+    private function isValidPattern(array $neighbors): bool
+    {
+        return in_array($neighbors['topLeft'] . $neighbors['bottomRight'], ['MS', 'SM']) &&
+            in_array($neighbors['topRight'] . $neighbors['bottomLeft'], ['MS', 'SM']);
 
-        echo "Lignes: $rowsOccurrences\n";
-
-        $colsOccurrences = array_reduce($this->columns, function ($carry, $row) use ($word, $reverted) {
-            $carry += preg_match_all("/$word/", $row);
-            return $carry + preg_match_all("/$reverted/", $row);
-        }, 0);
-
-
-        echo "Colonnes: $colsOccurrences\n";
-
-        $diagOccurrences = array_reduce($this->diagonals, function ($carry, $row) use ($word, $reverted) {
-            $carry += preg_match_all("/$word/", $row);
-            return $carry + preg_match_all("/$reverted/", $row);
-        }, 0);
-
-        echo "Diagonales: $diagOccurrences\n";
-
-        return $rowsOccurrences + $colsOccurrences + $diagOccurrences;
     }
 }
