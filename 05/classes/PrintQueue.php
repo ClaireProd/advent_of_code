@@ -41,4 +41,16 @@ class PrintQueue
     {
         return trim(file_get_contents($this->path));
     }
+
+    public function buildDependencies(): array
+    {
+        $dependencies = [];
+
+        foreach ($this->rules as $rule) {
+            $dependencies[$rule->priorityPage]['before'][] = $rule->secondaryPage;
+            $dependencies[$rule->secondaryPage]['after'][] = $rule->priorityPage;
+        }
+
+        return $dependencies;
+    }
 }
