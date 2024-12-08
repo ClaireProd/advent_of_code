@@ -3,8 +3,6 @@
 class Guard
 {
     public array $map;
-
-    // private Position $placedObstacle;
     public const SYMBOL = "^";
 
     public array $moveHistory = [];
@@ -88,16 +86,8 @@ class Guard
         $nextPosition = $this->getNextPosition();
 
         if ($nextPosition !== null && ($nextPosition->x !== $guardBaseCoordinates[0] || $nextPosition->y !== $guardBaseCoordinates[1])) {
-            // $this->placedObstacle = &$nextPosition;
             $nextPosition->isEmpty = false;
             echo "On place l'obstacle en position $nextPosition->x;$nextPosition->y";
         }
     }
-
-    // public function removePlacedObstacle(): void
-    // {
-    //     if (!empty($this->placedObstacle)) {
-    //         $this->placedObstacle->isEmpty = true;
-    //     }
-    // }
 }

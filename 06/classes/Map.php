@@ -78,32 +78,6 @@ class Map
         }, 0);
     }
 
-    // private function resetGuardPosition(array $guardBaseCoordinates): void
-    // {
-    //     $this->guard->x = $guardBaseCoordinates[0];
-    //     $this->guard->y = $guardBaseCoordinates[1];
-    //     $this->guard->map = $this->positions;
-    //     $this->guard->moveHistory = [];
-    // }
-
-    // private function getTotalSteps(): int
-    // {
-    //     $total = 0;
-    //     $guardBasePosition = [$this->guard->x, $this->guard->y];
-    //     while ($this->guard->inMap()) {
-    //         if ($this->guard->canMove()) {
-    //             $total++;
-    //             $this->guard->moveNext();
-    //         } else {
-    //             $this->guard->rotate();
-    //         }
-    //     }
-
-    //     $this->resetGuardPosition($guardBasePosition);
-
-    //     return $total;
-    // }
-
     private function simulateGuardMoves(): void
     {
         $guardBasePosition = [$this->guard->x, $this->guard->y];
