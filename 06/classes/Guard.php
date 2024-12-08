@@ -2,13 +2,23 @@
 
 class Guard
 {
-    private array $map;
+    public array $map;
+
+    // private Position $placedObstacle;
     public const SYMBOL = "^";
+
+    public array $moveHistory = [];
 
     public Direction $direction = Direction::UP;
 
+    private int $baseX;
+
+    private int $baseY;
+
     public function __construct(public int $x, public int $y)
     {
+        $this->baseX = $x;
+        $this->baseY = $y;
     }
 
     public function canMove(): bool
@@ -37,11 +47,18 @@ class Guard
             $nextPosition->isSecure = false;
         }
 
+        $this->moveHistory[$this->x][$this->y][$this->direction->getKey()] = true;
         $this->{$coordinate[0]} += $coordinate[1];
+    }
+
+    public function isLooping(): bool
+    {
+        return ($this->moveHistory[$this->x][$this->y][$this->direction->getKey()] ?? false) === true;
     }
 
     public function rotate(): void
     {
+        $this->moveHistory[$this->x][$this->y][$this->direction->getKey()] = true;
         $this->direction = $this->direction->getNext();
     }
 
@@ -55,18 +72,6 @@ class Guard
         };
     }
 
-    public function setMap(array $map): void
-    {
-        if (empty($this->map)) {
-            $this->map = $map;
-        }
-    }
-
-    public function getMap(): array
-    {
-        return $this->map;
-    }
-
     public function inMap(): bool
     {
         $mapWidth = count($this->map[0]);
@@ -77,4 +82,22 @@ class Guard
             $this->y >= 0 &&
             $this->y < $mapHeight;
     }
+
+    public function placeObstacleAtNextStep(array $guardBaseCoordinates): void
+    {
+        $nextPosition = $this->getNextPosition();
+
+        if ($nextPosition !== null && ($nextPosition->x !== $guardBaseCoordinates[0] || $nextPosition->y !== $guardBaseCoordinates[1])) {
+            // $this->placedObstacle = &$nextPosition;
+            $nextPosition->isEmpty = false;
+            echo "On place l'obstacle en position $nextPosition->x;$nextPosition->y";
+        }
+    }
+
+    // public function removePlacedObstacle(): void
+    // {
+    //     if (!empty($this->placedObstacle)) {
+    //         $this->placedObstacle->isEmpty = true;
+    //     }
+    // }
 }

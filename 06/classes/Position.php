@@ -16,4 +16,9 @@ class Position
             Guard::SYMBOL => new Position($x, $y, true, false),
         };
     }
+
+    public function placeObstacle(): void
+    {
+        $this->isEmpty = false;
+    }
 }

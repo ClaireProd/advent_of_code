@@ -4,6 +4,8 @@ require "classes/Map.php";
 
 $map = new Map('06/input.txt');
 
-$result = $map->countGuardDistinctPositions();
+$map->countGuardDistinctPositions();
 
-echo "Positions visitées par le garde: $result / " . (count($map->positions) * count($map->positions[0]));
+$result = $map->getObstaclesPossibilitiesToLoopGuard();
+
+echo "Possibilité des mettre le garde dans une boucle infinie: $result";

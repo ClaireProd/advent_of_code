@@ -19,6 +19,7 @@ class Map
 
     private function initMap(): void
     {
+        $this->positions = [];
         $rows = explode("\n", $this->getContent());
 
         foreach ($rows as $rowIndex => $row) {
@@ -33,22 +34,81 @@ class Map
             }
         }
 
-        $this->guard->setMap($this->positions);
+        $this->guard->map = $this->positions;
+    }
+
+    public function getObstaclesPossibilitiesToLoopGuard(): int
+    {
+        $loopingItineraries = 0;
+        // $totalSteps = $this->getTotalSteps();
+
+        foreach ($this->positions as $y => $row) {
+            foreach ($row as $x => $position) {
+                if (!$position->isSecure) {
+                    $this->initMap();
+                    $this->guard->map[$y][$x]->placeObstacle();
+
+                    while ($this->guard->inMap()) {
+                        if ($this->guard->canMove()) {
+                            $this->guard->moveNext();
+                        } else {
+                            $this->guard->rotate();
+                        }
+
+                        if ($this->guard->isLooping()) {
+                            $loopingItineraries++;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $loopingItineraries;
     }
 
     public function countGuardDistinctPositions(): int
     {
         $this->simulateGuardMoves();
 
-        return array_reduce($this->positions, function (int $carry, array $row) {
+        return array_reduce($this->guard->map, function (int $carry, array $row) {
             return $carry += array_reduce($row, function (int $sum, Position $position) {
                 return $sum += $position->isSecure ? 0 : 1;
             }, 0);
         }, 0);
     }
 
+    // private function resetGuardPosition(array $guardBaseCoordinates): void
+    // {
+    //     $this->guard->x = $guardBaseCoordinates[0];
+    //     $this->guard->y = $guardBaseCoordinates[1];
+    //     $this->guard->map = $this->positions;
+    //     $this->guard->moveHistory = [];
+    // }
+
+    // private function getTotalSteps(): int
+    // {
+    //     $total = 0;
+    //     $guardBasePosition = [$this->guard->x, $this->guard->y];
+    //     while ($this->guard->inMap()) {
+    //         if ($this->guard->canMove()) {
+    //             $total++;
+    //             $this->guard->moveNext();
+    //         } else {
+    //             $this->guard->rotate();
+    //         }
+    //     }
+
+    //     $this->resetGuardPosition($guardBasePosition);
+
+    //     return $total;
+    // }
+
     private function simulateGuardMoves(): void
     {
+        $guardBasePosition = [$this->guard->x, $this->guard->y];
+        $guardBaseMap = $this->guard->map;
+
         while ($this->guard->inMap()) {
             if ($this->guard->canMove()) {
                 $this->guard->moveNext();
@@ -57,7 +117,9 @@ class Map
             }
         }
 
-        $this->positions = $this->guard->getMap();
+        $this->guard->x = $guardBasePosition[0];
+        $this->guard->y = $guardBasePosition[1];
+        $this->guard->map = $guardBaseMap;
     }
 
     private static function exists(string $path): bool
