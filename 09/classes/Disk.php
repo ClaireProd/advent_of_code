@@ -1,6 +1,6 @@
 <?php
 
-require "StorageUnit.php";
+require "File.php";
 
 class Disk
 {
@@ -15,13 +15,12 @@ class Disk
         $id = 0;
 
         foreach (str_split($storage) as $value) {
-            for ($i = 0; $i < $value; $i++) {
-                $data[] = new StorageUnit($isEmpty ? null : $id);
-            }
+            $data[] = new File($isEmpty ? null : $id, $value);
 
             if ($isEmpty) {
                 $id++;
             }
+
             $isEmpty = !$isEmpty;
         }
 
@@ -30,21 +29,40 @@ class Disk
 
     public function optimizeSpace(): void
     {
-        $lastNonEmptyIndex = count($this->storage) - 1;
+        $baseIndice = 1;
+        $processingIndex = count($this->storage) - 1;
 
-        foreach ($this->storage as $index => $unit) {
-            if ($unit->isEmpty()) {
-                while ($lastNonEmptyIndex > $index && $this->storage[$lastNonEmptyIndex]->isEmpty()) {
-                    $lastNonEmptyIndex--;
-                }
+        while ($processingIndex >= 0) {
+            /** @var File $file */
 
-                if ($lastNonEmptyIndex > $index) {
-                    $unit->switchWith($this->storage[$lastNonEmptyIndex]);
-                    $lastNonEmptyIndex--;
-                } else {
+            $lastNonEmptyFileIndex = count($this->storage) - $baseIndice;
+
+            if ($this->storage[$lastNonEmptyFileIndex] ?? null === null) {
+                $processingIndex--;
+                continue;
+            }
+
+            while ($lastNonEmptyFileIndex < $processingIndex && $this->storage[$lastNonEmptyFileIndex]->isEmpty()) {
+                if ($lastNonEmptyFileIndex < 0) {
                     break;
                 }
+
+                $lastNonEmptyFileIndex--;
             }
+
+            // Ici on a récupéré le dernier élément
+
+            foreach ($this->storage as $key => $file) {
+                if ($key <= $lastNonEmptyFileIndex && $file->isEmpty() && $file->size < $this->storage[$processingIndex]->size) {
+                    echo "On va inverser\n";
+                }
+            }
+
+            $baseIndice += $this->storage[$processingIndex]->size;
+
+            echo "Élément de fin "  . $this->storage[$processingIndex]->id ."\n";
+
+            $processingIndex--;
         }
     }
 
@@ -54,7 +72,7 @@ class Disk
 
         foreach ($this->storage as $position => $unit) {
             if (!$unit->isEmpty()) {
-                $sum += $position * $unit->id;
+                $sum += $position * $unit->id * $unit->size;
             }
         }
 
@@ -64,7 +82,7 @@ class Disk
     public function output(): void
     {
         foreach ($this->storage as $unit) {
-            echo $unit->isEmpty() ? "." : $unit->id;
+            echo str_repeat($unit->isEmpty() ? "." : $unit->id, $unit->size);
         }
 
         echo "\n";

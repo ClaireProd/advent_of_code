@@ -2,15 +2,12 @@
 
 class File
 {
-    public function __construct(private string $path)
+    public function __construct(public ?int $id = null, public int $size)
     {
-        if (!file_exists($path)) {
-            throw new InvalidArgumentException("File not found: $this->path");
-        }
     }
 
-    public function parseData(): Disk
+    public function isEmpty() : bool
     {
-        return Disk::fromString(trim(file_get_contents($this->path)));
+        return $this->id === null;
     }
 }
