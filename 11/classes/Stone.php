@@ -4,15 +4,21 @@ class Stone
 {
     private const MULTIPLICATION_INDICE = 2024;
     private const MIN_WEIGHT = 1;
+
     public function __construct(public int $weight)
     {
     }
 
     public function split(): array
     {
-        $stones = str_split(strval($this->weight), strlen($this->weight) / 2);
+        $weightStr = (string)$this->weight;
+        $length = strlen($weightStr);
+        $halfLength = $length >> 1; // Bitwise shift for division by 2
 
-        return array_map(fn(string $s) => new Stone(intval($s)), $stones);
+        $firstPart = (int)substr($weightStr, 0, $halfLength);
+        $secondPart = (int)substr($weightStr, $halfLength);
+
+        return [new Stone($firstPart), new Stone($secondPart)];
     }
 
     public function multiply(): void
@@ -22,7 +28,7 @@ class Stone
 
     public function isEven(): bool
     {
-        return strlen(strval($this->weight)) % 2 === 0;
+        return (int)log10($this->weight) % 2 === 1;
     }
 
     public function putOne(): void

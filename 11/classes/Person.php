@@ -2,6 +2,7 @@
 
 class Person
 {
+    private array $cache = [0 => 1];
     public function __construct(public array $stones)
     {
     }
@@ -11,34 +12,46 @@ class Person
         $newStoneArrangement = [];
 
         foreach ($this->stones as $stone) {
-            if ($stone->weight === 0) {
-                $stone->putOne();
-                $newStoneArrangement[] = $stone;
-                continue;
-            }
-
-            if ($stone->isEven()) {
-                $parts = $stone->split();
-                foreach ($parts as $part) {
-                    $newStoneArrangement[] = $part;
+            if ($this->cache[$stone->weight] ?? null === null) {
+                if ($stone->weight === 0) {
+                    $stone->putOne();
+                    $newStoneArrangement[] = $stone;
+                    continue;
                 }
+
+                if ($stone->isEven()) {
+                    $data = $stone->split();
+                    array_push($newStoneArrangement, ...$data);
+                    $this->cache[$stone->weight] = $data;
+                    continue;
+                }
+
+                $stone->multiply();
+                $newStoneArrangement[] = $stone;
+                $this->cache[$stone->weight] = $stone->weight;
                 continue;
             }
 
-            $stone->multiply();
+            $data = $this->cache[$stone->weight];
+
+            if (is_array($data)) {
+                array_push($newStoneArrangement, ...$stone->split());
+                continue;
+            }
+
+            $stone->weight = $data;
             $newStoneArrangement[] = $stone;
+
         }
+
+        // var_dump($newStoneArrangement);
 
         $this->stones = $newStoneArrangement;
     }
 
     public function outputStones()
     {
-        foreach ($this->stones as $stone) {
-            echo "$stone->weight ";
-        }
-
-        echo "\n";
+        echo implode(' ', array_map(fn($stone) => $stone->weight, $this->stones)) . "\n";
     }
 
     public function countStones(): int
