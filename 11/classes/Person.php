@@ -2,7 +2,7 @@
 
 class Person
 {
-    private array $cache = [0 => 1];
+    private array $cache = [];
     public function __construct(public array $stones)
     {
     }
